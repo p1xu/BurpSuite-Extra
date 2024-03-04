@@ -22,6 +22,6 @@ send payload:
 			
 ```
 
-<img src="./static/sqlierr_bcheck.png"/>
+<img src="../static/sqlierr_bcheck.png"/>
 
 > *"insertion points": query parameters, post data, path, header*
