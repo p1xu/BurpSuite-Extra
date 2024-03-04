@@ -1,0 +1,240 @@
+metadata:
+    language: v2-beta
+    name: "Error based SQL injection"
+    description: "Scan for sql injection vulnerabilities in reponse"
+    author: "PIXU"
+    tags: "active", "error-based", "sql injection", "injection", "sqli"
+
+
+define:
+    issueRemediation = `Implement SQL remediation measures to mitigate the vulnerability.
+    References:
+    - https://portswigger.net/web-security/sql-injection
+    - https://owasp.org/www-community/attacks/SQL_Injection
+    - https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html`
+
+run for each:
+    sqli_payload =
+        "'",
+        "\""
+        
+given insertion point then
+    send payload:
+        appending: {sqli_payload}
+        #replacing: {sqli_payload}
+                
+    if {latest.response} matches "SQL syntax.*?MySQL" or {latest.response} matches "Warning.*?\Wmysqli?_" or {latest.response} matches "MySQLSyntaxErrorException" or {latest.response} matches "valid MySQL result" or {latest.response} matches "check the manual that (corresponds to|fits) your MySQL server version" or {latest.response} matches "check the manual that (corresponds to|fits) your MariaDB server version" or {latest.response} matches "check the manual that (corresponds to|fits) your Drizzle server version" or {latest.response} matches "Unknown column '[^ ]+' in 'field list'" or {latest.response} matches "MySqlClient\." or {latest.response} matches "com\.mysql\.jdbc" or {latest.response} matches "Zend_Db_(Adapter|Statement)_Mysqli_Exception" or {latest.response} matches "Pdo[./_\\]Mysql" or {latest.response} matches "MySqlException" or {latest.response} matches "SQLSTATE\[\d+\]: Syntax error or access violation" or {latest.response} matches "MemSQL does not support this type of query" or {latest.response} matches "is not supported by MemSQL" or {latest.response} matches "unsupported nested scalar subselect" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "MySQL error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "PostgreSQL.*?ERROR" or {latest.response} matches "Warning.*?\Wpg_" or {latest.response} matches "valid PostgreSQL result" or {latest.response} matches "Npgsql\." or {latest.response} matches "PG::SyntaxError:" or {latest.response} matches "org\.postgresql\.util\.PSQLException" or {latest.response} matches "ERROR:\s\ssyntax error at or near" or {latest.response} matches "ERROR: parser: parse error at or near" or {latest.response} matches "PostgreSQL query failed" or {latest.response} matches "org\.postgresql\.jdbc" or {latest.response} matches "Pdo[./_\\]Pgsql" or {latest.response} matches "PSQLException" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "PostgreSQL error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Driver.*? SQL[\-\_\ ]*Server" or {latest.response} matches "OLE DB.*? SQL Server" or {latest.response} matches "\bSQL Server[^<\"]+Driver" or {latest.response} matches "Warning.*?\W(mssql|sqlsrv)_" or {latest.response} matches "\bSQL Server[^<\"]+[0-9a-fA-F]{8}" or {latest.response} matches "System\.Data\.SqlClient\.(SqlException|SqlConnection\.OnError)" or {latest.response} matches "(?s)Exception.*?\bRoadhouse\.Cms\." or {latest.response} matches "Microsoft SQL Native Client error '[0-9a-fA-F]{8}" or {latest.response} matches "\[SQL Server\]" or {latest.response} matches "ODBC SQL Server Driver" or {latest.response} matches "ODBC Driver \d+ for SQL Server" or {latest.response} matches "SQLServer JDBC Driver" or {latest.response} matches "com\.jnetdirect\.jsql" or {latest.response} matches "macromedia\.jdbc\.sqlserver" or {latest.response} matches "Zend_Db_(Adapter|Statement)_Sqlsrv_Exception" or {latest.response} matches "com\.microsoft\.sqlserver\.jdbc" or {latest.response} matches "Pdo[./_\\](Mssql|SqlSrv)" or {latest.response} matches "SQL(Srv|Server)Exception" or {latest.response} matches "Unclosed quotation mark after the character string" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Microsoft SQL Server error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Microsoft Access (\d+ )?Driver" or {latest.response} matches "JET Database Engine" or {latest.response} matches "Access Database Engine" or {latest.response} matches "ODBC Microsoft Access" or {latest.response} matches "Syntax error \(missing operator\) in query expression" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Microsoft Access error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "\bORA-\d{5}" or {latest.response} matches "Oracle error" or {latest.response} matches "Oracle.*?Driver" or {latest.response} matches "Warning.*?\W(oci|ora)_" or {latest.response} matches "quoted string not properly terminated" or {latest.response} matches "SQL command not properly ended" or {latest.response} matches "macromedia\.jdbc\.oracle" or {latest.response} matches "oracle\.jdbc" or {latest.response} matches "Zend_Db_(Adapter|Statement)_Oracle_Exception" or {latest.response} matches "Pdo[./_\\](Oracle|OCI)" or {latest.response} matches "OracleException" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Oracle error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "CLI Driver.*?DB2" or {latest.response} matches "DB2 SQL error" or {latest.response} matches "\bdb2_\w+\(" or {latest.response} matches "SQLCODE[=:\d, -]+SQLSTATE" or {latest.response} matches "com\.ibm\.db2\.jcc" or {latest.response} matches "Zend_Db_(Adapter|Statement)_Db2_Exception" or {latest.response} matches "Pdo[./_\\]Ibm" or {latest.response} matches "DB2Exception" or {latest.response} matches "ibm_db_dbi\.ProgrammingError" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "IBM DB2 error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+         if {latest.response} matches "Warning.*?\Wifx_" or {latest.response} matches "Exception.*?Informix" or {latest.response} matches "Informix ODBC Driver" or {latest.response} matches "ODBC Informix driver" or {latest.response} matches "com\.informix\.jdbc" or {latest.response} matches "weblogic\.jdbc\.informix" or {latest.response} matches "Pdo[./_\\]Informix" or {latest.response} matches "IfxException" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Informix error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Dynamic SQL Error" or {latest.response} matches "Warning.*?\Wibase_" or {latest.response} matches "org\.firebirdsql\.jdbc" or {latest.response} matches "Pdo[./_\\]Firebird" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Firebird error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "SQLite/JDBCDriver" or {latest.response} matches "SQLite\.Exception" or {latest.response} matches "(Microsoft|System)\.Data\.SQLite\.SQLiteException" or {latest.response} matches "Warning.*?\W(sqlite_|SQLite3::)" or {latest.response} matches "\[SQLITE_ERROR\]" or {latest.response} matches "SQLite error \d+:" or {latest.response} matches "sqlite3.OperationalError:" or {latest.response} matches "SQLite3::SQLException" or {latest.response} matches "org\.sqlite\.JDBC" or {latest.response} matches "Pdo[./_\\]Sqlite" or {latest.response} matches "SQLiteException" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "SQLite error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "SQL error.*?POS([0-9]+)" or {latest.response} matches "Warning.*?\Wmaxdb_" or {latest.response} matches "DriverSapDB" or {latest.response} matches "-3014.*?Invalid end of SQL statement" or {latest.response} matches "com\.sap\.dbtech\.jdbc" or {latest.response} matches "\[-3008\].*?: Invalid keyword or missing delimiter" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "SAP MaxDB error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Warning.*?\Wsybase_" or {latest.response} matches "Sybase message" or {latest.response} matches "Sybase.*?Server message" or {latest.response} matches "SybSQLException" or {latest.response} matches "Sybase\.Data\.AseClient" or {latest.response} matches "com\.sybase\.jdbc" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Sybase error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Warning.*?\Wingres_" or {latest.response} matches "Ingres SQLSTATE" or {latest.response} matches "Ingres\W.*?Driver" or {latest.response} matches "com\.ingres\.gcf\.jdbc" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Ingres error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Exception (condition )?\d+\. Transaction rollback" or {latest.response} matches "com\.frontbase\.jdbc" or {latest.response} matches "Syntax error 1. Missing" or {latest.response} matches "(Semantic|Syntax) error [1-4]\d{2}\." then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "FrontBase error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Unexpected end of command in statement \[" or {latest.response} matches "Unexpected token.*?in statement \[" or {latest.response} matches "org\.hsqldb\.jdbc" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "HSQLDB error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "org\.h2\.jdbc" or {latest.response} matches "\[42000-192\]" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "H2 error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "![0-9]{5}![^\n]+(failed|unexpected|error|syntax|expected|violation|exception)" or {latest.response} matches "\[MonetDB\]\[ODBC Driver" or {latest.response} matches "nl\.cwi\.monetdb\.jdbc" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "MonetDB error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Syntax error: Encountered" or {latest.response} matches "org\.apache\.derby" or {latest.response} matches "ERROR 42X01" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Apache Derby error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches ", Sqlstate: (3F|42).{3}, (Routine|Hint|Position):" or {latest.response} matches "/vertica/Parser/scan" or {latest.response} matches "com\.vertica\.jdbc" or {latest.response} matches "org\.jkiss\.dbeaver\.ext\.vertica" or {latest.response} matches "com\.vertica\.dsi\.dataengine" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Vertica error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "com\.mckoi\.JDBCDriver" or {latest.response} matches "com\.mckoi\.database\.jdbc" or {latest.response} matches "<REGEX_LITERAL>" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Mckoi error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "com\.facebook\.presto\.jdbc" or {latest.response} matches "io\.prestosql\.jdbc" or {latest.response} matches "com\.simba\.presto\.jdbc" or {latest.response} matches "UNION query has different number of fields: \d+, \d+" or {latest.response} matches "line \d+:\d+: mismatched input '[^']+'. Expecting:" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Presto error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Altibase\.jdbc\.driver" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Altibase error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "com\.mimer\.jdbc" or {latest.response} matches "Syntax error,[^\n]+assumed to mean" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "MimerSQL error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "Code: \d+. DB::Exception:" or {latest.response} matches "Syntax error: failed at position \d+" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "ClickHouse error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches  "io\.crate\.client\.jdbc" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "CrateDB error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "encountered after end of query" or {latest.response} matches "A comparison operator is required here" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Cache error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "-10048: Syntax error" or {latest.response} matches "rdmStmtPrepare\(.+?\) returned" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Raima Database Manager error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
+
+    if {latest.response} matches "SQ074: Line \d+:" or {latest.response} matches "SR185: Undefined procedure" or {latest.response} matches "SQ200: No table " or {latest.response} matches "Virtuoso S0002 Error" or {latest.response} matches "\[(Virtuoso Driver|Virtuoso iODBC Driver)\]\[Virtuoso Server\]" then
+        report issue:
+            severity: high
+            confidence: certain
+            detail: "Virtuoso error was detected in the response."
+            remediation: `{issueRemediation}`
+    end if
