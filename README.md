@@ -12,3 +12,14 @@ BChecks Online documentation can be found [here](https://portswigger.net/burp/do
 
 [/BChecks/README.md](/BChecks/README.md) for more detail.
 
+## Bambdas
+#### What are Bambdas Scripts/Templates?
+Burp Bambdas in Burp Suite Professional are a powerful feature that enables users to customize and extend the functionality of the tool within the user interface, thereby enhancing testing capabilities by automating specific tasks or checks.
+Bambdas Online documentation can be found [here](https://portswigger.net/burp/documentation/desktop/extensions/bambdas)
+		
+[/Bambdas](/Bambdas/)
+* [file-upload-check.bambdas](/BChecks/file-upload-check.bambdas) (Detect file upload in HTML)
+
+[/Bambdas/README.md](/Bambdas/README.md) for more detail.
+
+

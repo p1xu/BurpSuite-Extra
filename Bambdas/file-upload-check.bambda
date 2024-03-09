@@ -1,0 +1,31 @@
+/**
+ * Filter for responses that has a file upload in the reponse.
+ * @author PIXU (https://twitter.com/0_Pixu)
+**/
+
+boolean InProxyScopeOnly = true;
+boolean ShowReponseMatchOnly = true;
+HighlightColor Color = HighlightColor.CYAN;
+
+if (InProxyScopeOnly && !requestResponse.request().isInScope()) {
+    return !ShowReponseMatchOnly;
+}
+
+if (!requestResponse.hasResponse()) {
+    return !ShowReponseMatchOnly;
+}
+
+if (requestResponse.response().statedMimeType() != MimeType.HTML) {
+    return !ShowReponseMatchOnly;
+}
+
+String responseBody = requestResponse.response().bodyToString();
+Pattern pattern = Pattern.compile("<input\s+[^>]*?type=\"file\"[^>]*?(?:\\/?>|\\/>|>)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+Matcher matcher = pattern.matcher(responseBody);
+if (matcher.find()) {
+    requestResponse.annotations().setHighlightColor(Color);
+    requestResponse.annotations().setNotes("File Upload was found in the response.");
+    return true;
+}
+
+return !ShowReponseMatchOnly;
